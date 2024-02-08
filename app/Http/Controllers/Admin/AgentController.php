@@ -10,7 +10,6 @@ use App\Models\District;
 use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
@@ -141,7 +140,51 @@ class AgentController extends Controller
      */
     public function update(AgentRequest $request, Agent $agent)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $agent->update([
+                'district_id' => $request->district_id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'address' => $request->address,
+            ]);
+
+            $agent_photo = $request->file('image');
+            if ($agent_photo) {
+                $image_path = FileHandler::uploadImage($agent_photo, 'agents_photo', ['width' => 591, 'height' => 609]);
+
+                FileHandler::delete(@$agent->image->base_path);
+
+                $agent->image()->update([
+                    'url' => Storage::url($image_path),
+                    'base_path' => $image_path,
+                    'type' => 'agent_photo',
+                ]);
+            }
+
+            $agent_docs = $request->file('doc');
+            if ($agent_docs) {
+                foreach ($agent_docs as $agent_doc) {
+                    $doc_path = FileHandler::uploadFile($agent_doc, 'uploads/agents_docs');
+                    $agent->document()->update([
+                        'url' => Storage::url($doc_path),
+                        'base_path' => $doc_path,
+                        'type' => 'agent_doc',
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Agent updated successfully.');
+
+        } catch (Exception $exception) {
+            report($exception);
+            DB::rollBack();
+
+            return redirect()->back()->with('error', $exception->getMessage());
+        }
     }
 
     /**

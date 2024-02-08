@@ -24,8 +24,10 @@
     </div>
 
     <div class="wrapper wrapper-content animated fadeInRight">
-        <form action="{{ route('admin.agents.store') }}" method="post" enctype="multipart/form-data">
+        <form action="{{ route('admin.agents.update', $agent->id) }}" method="post" enctype="multipart/form-data">
             @csrf
+            @method('PUT')
+
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ibox ">

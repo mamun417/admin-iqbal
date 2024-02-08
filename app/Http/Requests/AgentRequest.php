@@ -36,7 +36,7 @@ class AgentRequest extends FormRequest
         }
 
         if (request()->isMethod('put')) {
-            $rules['email'] = 'required|email|unique:agents,email'. $this->route('agent')->id;
+            $rules['email'] = 'required|email|unique:agents,email,'. $this->route('agent')->id;
             $rules['phone'] = 'required|unique:agents,phone,' . $this->route('agent')->id;
         }
 
