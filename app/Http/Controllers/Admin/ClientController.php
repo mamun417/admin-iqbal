@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Helpers\FileHandler;
 use App\Http\Requests\ClientRequest;
 use App\Models\Agent;
 use App\Models\Client;
@@ -11,6 +12,7 @@ use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class ClientController extends Controller
@@ -64,6 +66,28 @@ class ClientController extends Controller
                 'paid' => $request->paid,
                 'due' => $request->due,
             ]);
+
+            $client_photo = $request->file('image');
+            if ($client_photo) {
+                $image_path = FileHandler::uploadImage($client_photo, 'agents_photo', ['width' => 591, 'height' => 609]);
+                $client->image()->create([
+                    'url' => Storage::url($image_path),
+                    'base_path' => $image_path,
+                    'type' => 'agent_photo',
+                ]);
+            }
+
+            $client_docs = $request->file('doc');
+            if ($client_docs) {
+                foreach ($client_docs as $client_doc) {
+                    $doc_path = FileHandler::uploadFile($client_doc, 'uploads/agents_docs');
+                    $client->document()->create([
+                        'url' => Storage::url($doc_path),
+                        'base_path' => $doc_path,
+                        'type' => 'agent_doc',
+                    ]);
+                }
+            }
 
             DB::commit();
 
@@ -125,6 +149,31 @@ class ClientController extends Controller
                 'paid' => $request->paid,
                 'due' => $request->due,
             ]);
+
+            $client_photo = $request->file('image');
+            if ($client_photo) {
+                $image_path = FileHandler::uploadImage($client_photo, 'agents_photo', ['width' => 591, 'height' => 609]);
+
+                FileHandler::delete(@$client->image->base_path);
+
+                $client->image()->update([
+                    'url' => Storage::url($image_path),
+                    'base_path' => $image_path,
+                    'type' => 'agent_photo',
+                ]);
+            }
+
+            $client_docs = $request->file('doc');
+            if ($client_docs) {
+                foreach ($client_docs as $client_doc) {
+                    $doc_path = FileHandler::uploadFile($client_doc, 'uploads/agents_docs');
+                    $client->document()->update([
+                        'url' => Storage::url($doc_path),
+                        'base_path' => $doc_path,
+                        'type' => 'agent_doc',
+                    ]);
+                }
+            }
 
             DB::commit();
 

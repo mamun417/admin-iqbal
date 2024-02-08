@@ -252,3 +252,79 @@
         </div>
     </div>
 </div>
+
+
+<div class="col-md-6">
+    <div class="form-group">
+        <label class="control-label">Client Photos</label>
+        <input type="file" name="image" class="form-control" id="imgInp">
+        <div id="image-preview-container" class="mt-2"></div>
+
+        @error('image')
+        <span class="help-block m-b-none text-danger">
+            {{ @$message }}
+        </span>
+        @enderror
+    </div>
+</div>
+
+<div class="col-md-6">
+    <div class="form-group">
+        <label class="control-label">Client Documents</label>
+        <input type="file" name="doc[]" multiple class="form-control" id="docInp">
+        <div id="doc-preview-container" class="mt-2"></div>
+
+        @error('doc')
+        <span class="help-block m-b-none text-danger">
+            {{ @$message }}
+        </span>
+        @enderror
+    </div>
+</div>
+
+<script>
+    imgInp.onchange = evt => {
+        handleFileSelection(evt.target.files, 'image-preview-container', 'image');
+    };
+
+    docInp.onchange = evt => {
+        handleFileSelection(evt.target.files, 'doc-preview-container', 'document');
+    };
+
+    function handleFileSelection(files, containerId, fileType) {
+        const previewContainer = document.getElementById(containerId);
+        previewContainer.innerHTML = '';
+
+        for (const file of files) {
+            const previewElement = document.createElement('div');
+            previewElement.className = 'preview-item';
+
+            if (fileType === 'image' && file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.width = 100;
+                img.className = 'img-thumbnail mt-1';
+                previewElement.appendChild(img);
+            } else {
+                const icon = document.createElement('i');
+                icon.className = fileType === 'image' ? 'fa fa-file-photo-o fa-4x' : getFileIconClass(file);
+                const ext = file.name.split('.').pop();
+                icon.title = `${fileType === 'image' ? 'Image' : 'File'}: ${file.name} (${ext.toUpperCase()})`;
+                previewElement.appendChild(icon);
+            }
+
+            previewContainer.appendChild(previewElement);
+        }
+    }
+
+    function getFileIconClass(file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (ext === 'pdf') {
+            return 'fa fa-file-pdf-o fa-4x';
+        } else if (ext === 'doc' || ext === 'docx') {
+            return 'fa fa-file-word-o fa-4x';
+        } else {
+            return 'fa fa-file-photo-o fa-4x'; // Default icon for other file types
+        }
+    }
+</script>

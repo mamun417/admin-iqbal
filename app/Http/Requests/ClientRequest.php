@@ -40,6 +40,7 @@ class ClientRequest extends FormRequest
             'contract_price' => 'nullable|numeric',
             'paid' => 'nullable|numeric',
             'due' => 'nullable|numeric',
+            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
     }
 }
